@@ -1,5 +1,6 @@
 package hu.bme.vik.plugins
 
+import hu.bme.vik.Config
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
@@ -25,13 +26,17 @@ fun Application.configureRouting() {
         get("/test") {
             var available = 0
 
-            if (client.request("http://car-detector-ai:5000").status.value == 200) {
-                available += 1
-            }
+            try {
+                if (client.request(Config.aiRoute).status.value == 200) {
+                    available += 1
+                }
+            } catch (_: Exception) {}
 
-            if (client.request("http://car-detector-notifier:5000").status.value == 200) {
-                available += 1
-            }
+            try {
+                if (client.request(Config.notificationRoute).status.value == 200) {
+                    available += 1
+                }
+            } catch (_: Exception) {}
 
             call.respond(available)
         }
