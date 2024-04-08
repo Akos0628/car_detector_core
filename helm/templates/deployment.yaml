@@ -15,10 +15,10 @@ spec:
         - name: car-detector-core
           image: akos0628/car-detector-core:{{ .Values.env.APP_VERSION }}
           env:
-          {{- range $key, $val := .Values.env }}
-          - name: {{ $key }}
-            value: {{ $val | quote }}
-          {{ - end }}
+            {{- range $key, $val := .Values.env }}
+            - name: {{ $key }}
+              value: {{ $val | quote }}
+            {{- end }}
           ports:
             - name: http
               containerPort: 5000
