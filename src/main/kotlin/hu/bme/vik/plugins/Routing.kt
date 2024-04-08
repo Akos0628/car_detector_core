@@ -27,13 +27,13 @@ fun Application.configureRouting() {
             var available = 0
 
             try {
-                if (client.request("http://car-detector-ai:5000").status.value == 200) {
+                if (client.request(Config.aiRoute).status.value == 200) {
                     available += 1
                 }
             } catch (_: Exception) {}
 
             try {
-                if (client.request("http://car-detector-notifier:5000").status.value == 200) {
+                if (client.request(Config.notificationRoute).status.value == 200) {
                     available += 1
                 }
             } catch (_: Exception) {}
