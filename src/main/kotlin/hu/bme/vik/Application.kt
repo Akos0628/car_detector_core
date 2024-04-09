@@ -11,9 +11,8 @@ fun main(args: Array<String>) {
 
 fun Application.module() {
     Config.aiRoute = environment.config.property("application.aiRoute").getString()
-    Config.notificationRoute = environment.config.property("application.notificationRoute").getString()
+    Config.operatorJoinUrl = environment.config.property("application.operatorJoinUrl").getString()
 
-    configureSerialization()
     configureRouting()
     configureTemplating()
 
