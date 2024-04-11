@@ -31,17 +31,38 @@
             align-items: center;
             margin-bottom: 10px;
         }
-        .button-container button {
-             background-color: #007bff;
-             color: #fff;
-             border: none;
-             padding: 10px 20px;
-             cursor: pointer;
-             margin-right: 10px;
-         }
-        .button-container button:disabled {
+        input[type=text], select {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .submit-container button {
+            width: 100%;
+            background-color: #4CAF50;
+            color: white;
+            padding: 14px 20px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .submit-container button:disabled {
             background-color: #6c757d;
             cursor: not-allowed;
+        }
+        .file-upload {
+            width: 100%;
+            background-color: #007bff;
+            color: white;
+            padding: 14px 20px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
         }
         #preview {
             max-width: 100%;
@@ -50,19 +71,6 @@
         }
         input[type="file"] {
             display: none;
-        }
-        .file-upload,
-        input[type="submit"] {
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            margin-right: 10px;
-        }
-        input[type="submit"]:disabled {
-            background-color: #6c757d;
-            cursor: not-allowed;
         }
         .footer {
             position: fixed;
@@ -85,10 +93,10 @@
 
             if (file) {
                 reader.readAsDataURL(file);
-                document.querySelector('input[type=submit]').removeAttribute('disabled');
+                document.querySelector('button[type=submit]').removeAttribute('disabled');
             } else {
                 preview.src = "";
-                document.querySelector('input[type=submit]').setAttribute('disabled', 'disabled');
+                document.querySelector('button[type=submit]').setAttribute('disabled', 'disabled');
             }
         }
     </script>
@@ -102,8 +110,11 @@
                 <label for="file-upload" class="file-upload">Kép kiválasztása</label>
                 <input id="file-upload" type="file" name="file" accept="image/jpeg" onchange="previewFile()">
             </div>
-            <div class="button-container">
-                <button type="submit">Küldés</button>
+            <div>
+                <input id="desc" type="text" name="description" placeholder="Leírás">
+            </div>
+            <div class="submit-container">
+                <button type="submit" disabled>Feltöltés</button>
             </div>
         </form>
         <div>

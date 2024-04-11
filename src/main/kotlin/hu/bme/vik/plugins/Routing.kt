@@ -35,20 +35,26 @@ fun Application.configureRouting() {
             post {
                 val multipartData = call.receiveMultipart()
                 var fileBytes: ByteArray? = null
+                var description: String? = null
 
                 multipartData.forEachPart { part ->
                     when (part) {
                         is PartData.FileItem -> {
                             fileBytes = part.streamProvider().readBytes()
                         }
-                        is PartData.FormItem -> {}
+                        is PartData.FormItem -> {
+                            when (part.name) {
+                                "description" -> { description = part.value }
+                                else -> {}
+                            }
+                        }
                         is PartData.BinaryItem -> {}
                         is PartData.BinaryChannelItem -> {}
                     }
                 }
 
-                if (fileBytes == null) {
-                    val text = "No image given"
+                if (fileBytes == null || description == null) {
+                    val text = "Missing image or description"
                     call.respondText(text, status = HttpStatusCode(400, text))
                 }
 
@@ -59,7 +65,7 @@ fun Application.configureRouting() {
                     call.respondText(text, status = HttpStatusCode(400, text))
                 }
                 val detections = detectionResponse.body<Detections>()
-
+                sendNotification(description!!, detections.detections.size)
 
                 val bufferedImage = fileBytes!!.toBufferedImage()
 
@@ -72,6 +78,11 @@ fun Application.configureRouting() {
             }
         }
     }
+}
+
+fun sendNotification(description: String, numberOfCars: Int) {
+    println("Number of cars: $numberOfCars")
+    println("Description: $description")
 }
 
 fun ByteArray.toBase64(): String =
