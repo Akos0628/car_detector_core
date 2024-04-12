@@ -1,11 +1,9 @@
 package hu.bme.vik.plugins
 
-import hu.bme.vik.Config
 import hu.bme.vik.clients.AiClient
 import hu.bme.vik.model.Detections
-import hu.bme.vik.utils.drawRectanglesForDetectedObjects
-import hu.bme.vik.utils.toBufferedImage
-import hu.bme.vik.utils.toByteArray
+import hu.bme.vik.repository.PictureRepository
+import hu.bme.vik.utils.*
 import io.ktor.client.call.*
 import io.ktor.http.*
 import io.ktor.http.content.*
@@ -17,20 +15,37 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import java.util.Base64
+import kotlinx.coroutines.async
+import org.koin.ktor.ext.inject
 
 fun Application.configureRouting() {
+    val repository by inject<PictureRepository>()
+
     install(ContentNegotiation) {
         json()
     }
     routing {
         staticResources("/static", "files")
         get("/") {
-            call.respondRedirect("detector")
+            call.respondRedirect("list")
+        }
+        get("list") {
+            val posts = repository.getAllPicture()
+            println(posts.size)
+
+            call.respond(
+                FreeMarkerContent("index.ftl", model =
+                    mapOf("posts" to posts)
+                )
+            )
+        }
+        get("download/{id}") {
+            val id = call.parameters["id"]!!
+            call.respondBytes(repository.getPicture(id), ContentType.Image.JPEG)
         }
         route("detector") {
             get {
-                call.respond(FreeMarkerContent("index.ftl", model = loadTemplateData()))
+                call.respond(FreeMarkerContent("upload.ftl", model = loadTemplateData()))
             }
             post {
                 val multipartData = call.receiveMultipart()
@@ -54,27 +69,27 @@ fun Application.configureRouting() {
                 }
 
                 if (fileBytes == null || description == null) {
-                    val text = "Missing image or description"
-                    call.respondText(text, status = HttpStatusCode(400, text))
+                    call.respond(FreeMarkerContent("upload.ftl", model = loadTemplateData()))
                 }
 
-                val detectionResponse = AiClient.getDetection(fileBytes!!)
+                val detectionRequest = async { AiClient.getDetection(fileBytes!!) }
 
-                if (detectionResponse.status.value == 400) {
-                    val text = "Bad request"
-                    call.respondText(text, status = HttpStatusCode(400, text))
+                val bufferedImage = fileBytes!!.toBufferedImage()
+                repository.upload(bufferedImage, description!!)
+
+                val detectionResponse = detectionRequest.await()
+                if (detectionResponse.status.value != 200) {
+                    call.respond(FreeMarkerContent("upload.ftl", model = loadTemplateData()))
                 }
+
                 val detections = detectionResponse.body<Detections>()
                 sendNotification(description!!, detections.detections.size)
 
-                val bufferedImage = fileBytes!!.toBufferedImage()
-
-                println(detections)
                 drawRectanglesForDetectedObjects(bufferedImage, detections.detections)
 
                 val result = bufferedImage.toByteArray().toBase64()
 
-                call.respond(FreeMarkerContent("index.ftl", model = loadTemplateData(result)))
+                call.respond(FreeMarkerContent("upload.ftl", model = loadTemplateData(result)))
             }
         }
     }
@@ -84,11 +99,3 @@ fun sendNotification(description: String, numberOfCars: Int) {
     println("Number of cars: $numberOfCars")
     println("Description: $description")
 }
-
-fun ByteArray.toBase64(): String =
-    String(Base64.getEncoder().encode(this))
-
-fun loadTemplateData(detectedImage: String? = null): Map<String, String> = mapOf(
-    "operatorJoinUrl" to Config.operatorJoinUrl,
-    "detectedImage" to if (detectedImage == null) "" else "data:image/png;base64, $detectedImage"
-)

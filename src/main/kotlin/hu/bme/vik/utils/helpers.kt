@@ -1,11 +1,13 @@
 package hu.bme.vik.utils
 
+import hu.bme.vik.Config
 import hu.bme.vik.model.Detected
 import java.awt.*
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
+import java.util.*
 import javax.imageio.ImageIO
 
 
@@ -56,3 +58,11 @@ fun drawRectanglesForDetectedObjects(
         graphics.drawRect(left.toInt(), top.toInt(), (right - left).toInt(), (bottom - top).toInt())
     }
 }
+
+fun ByteArray.toBase64(): String =
+    String(Base64.getEncoder().encode(this))
+
+fun loadTemplateData(detectedImage: String? = null): Map<String, String> = mapOf(
+    "operatorJoinUrl" to Config.operatorJoinUrl,
+    "detectedImage" to if (detectedImage == null) "" else "data:image/png;base64, $detectedImage"
+)

@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Car Detector</title>
+    <title>Post List</title>
     <style>
+        /* Stílusok */
         body {
             font-family: Arial, sans-serif;
             background-color: #f5f5f5;
@@ -11,118 +12,61 @@
         }
         .container {
             max-width: 800px;
-            margin: 0 auto;
-            padding: 40px 20px;
-            text-align: center;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         h1 {
+            text-align: center;
+        }
+        .post-container {
             margin-bottom: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
         }
-        .form-container {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .button-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        input[type=text], select {
-            width: 100%;
-            padding: 12px 20px;
-            margin: 8px 0;
-            display: inline-block;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        .submit-container button {
-            width: 100%;
-            background-color: #4CAF50;
-            color: white;
-            padding: 14px 20px;
-            margin: 8px 0;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .submit-container button:disabled {
-            background-color: #6c757d;
-            cursor: not-allowed;
-        }
-        .file-upload {
-            width: 100%;
-            background-color: #007bff;
-            color: white;
-            padding: 14px 20px;
-            margin: 8px 0;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        #preview {
+        .post-image img {
             max-width: 100%;
-            max-height: 70vh; /* Az ablak magasságának 70%-a */
+            height: auto;
+        }
+        .post-description {
+            margin-top: 20px;
+            text-align: justify;
+        }
+        .upload-button-container {
+            text-align: center;
             margin-bottom: 20px;
         }
-        input[type="file"] {
-            display: none;
-        }
-        .footer {
-            position: fixed;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            text-decoration: none;
-            color: #007bff;
+        .upload-button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
         }
     </style>
-    <script>
-        function previewFile() {
-            var preview = document.querySelector('img');
-            var file = document.querySelector('input[type=file]').files[0];
-            var reader = new FileReader();
-
-            reader.onloadend = function () {
-                preview.src = reader.result;
-            }
-
-            if (file) {
-                reader.readAsDataURL(file);
-                document.querySelector('button[type=submit]').removeAttribute('disabled');
-            } else {
-                preview.src = "";
-                document.querySelector('button[type=submit]').setAttribute('disabled', 'disabled');
-            }
-        }
-    </script>
 </head>
 <body>
 <div class="container">
-    <h1>Car Detector</h1>
-    <div class="form-container">
-        <form action="/detector" method="post" enctype="multipart/form-data">
-            <div class="button-container">
-                <label for="file-upload" class="file-upload">Kép kiválasztása</label>
-                <input id="file-upload" type="file" name="file" accept="image/jpeg" onchange="previewFile()">
-            </div>
-            <div>
-                <input id="desc" type="text" name="description" placeholder="Leírás">
-            </div>
-            <div class="submit-container">
-                <button type="submit" disabled>Feltöltés</button>
-            </div>
-        </form>
-        <div>
-            <img id="preview" src="${detectedImage}" alt="Kiválasztott kép">
-        </div>
+    <h1>Post List</h1>
+    <div class="upload-button-container">
+        <button class="upload-button" onclick="window.location.href='/detector'">Feltöltés</button>
     </div>
+    <#list posts as post>
+        <div class="post-container">
+            <div class="post-image">
+                <img src="${post.imageUrl}" alt="Post image">
+            </div>
+            <div class="post-description">
+                <p>${post.description}</p>
+            </div>
+        </div>
+    </#list>
 </div>
-<!-- Információs link -->
-<a href="${operatorJoinUrl}" class="footer">Join our operators</a>
 </body>
 </html>
