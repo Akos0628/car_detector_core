@@ -36,3 +36,18 @@ spec:
         resources:
           requests:
             storage: 16Gi
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 27017
+      protocol: TCP
+      targetPort: 27017
+  selector:
+    app: mongodb
