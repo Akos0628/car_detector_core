@@ -1,10 +1,9 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: mongodb
-  labels:
-    app: mongodb
 spec:
+  serviceName: "mongodb"
   replicas: 1
   selector:
     matchLabels:
@@ -17,29 +16,6 @@ spec:
       containers:
         - name: mongodb
           image: mongo:4.4
-          args: ["--dbpath","/data/db"]
-          livenessProbe:
-            exec:
-              command:
-                - mongosh
-                - --eval
-                - "db.adminCommand('ping')"
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            timeoutSeconds: 5
-            successThreshold: 1
-            failureThreshold: 6
-          readinessProbe:
-            exec:
-              command:
-                - mongosh
-                - --eval
-                - "db.adminCommand('ping')"
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            timeoutSeconds: 5
-            successThreshold: 1
-            failureThreshold: 6
           env:
             - name: MONGO_INITDB_ROOT_USERNAME
               value: "pic"
@@ -52,7 +28,11 @@ spec:
           volumeMounts:
             - name: mongodb-data
               mountPath: /data/db
-      volumes:
-        - name: mongodb-data
-          persistentVolumeClaim:
-            claimName: mongodb-data
+  volumeClaimTemplates:
+    - metadata:
+        name: mongodb-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 16Gi
