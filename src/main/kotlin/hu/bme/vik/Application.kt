@@ -11,6 +11,8 @@ import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
 import org.litote.kmongo.reactivestreams.KMongo
 import pl.jutupe.ktor_rabbitmq.RabbitMQ
+import pl.jutupe.ktor_rabbitmq.RabbitMQConfiguration
+import pl.jutupe.ktor_rabbitmq.RabbitMQInstance
 
 fun main(args: Array<String>) {
     io.ktor.server.netty.EngineMain.main(args)
@@ -34,31 +36,38 @@ fun Application.module() {
         environment.config.property("application.databaseName").getString()
     )
 
+    val myRabbitMQInstance = RabbitMQInstance(
+        RabbitMQConfiguration.create()
+            .apply {
+                uri = Config.rabbitUri
+                connectionName = Config.rabbitConnectionName
+
+                enableLogging()
+
+                //serialize and deserialize functions are required
+                serialize { jacksonObjectMapper().writeValueAsBytes(it) }
+                deserialize { bytes, type -> jacksonObjectMapper().readValue(bytes, type.javaObjectType) }
+
+                //example initialization logic (create queues etc.)
+                initialize { // RabbitMQ Channel.() block ->
+                    exchangeDeclare(
+                        /* exchange = */ Config.rabbitExchange,
+                        /* type = */ "direct",
+                        /* durable = */ true
+                    )
+                    queueDeclare(
+                        /* queue = */ Config.rabbitQueue,
+                        /* durable = */true,
+                        /* exclusive = */false,
+                        /* autoDelete = */false,
+                        /* arguments = */emptyMap()
+                    )
+                }
+            }
+    )
+
     install(RabbitMQ) {
-        uri = Config.rabbitUri
-        connectionName = Config.rabbitConnectionName
-
-        enableLogging()
-
-        //serialize and deserialize functions are required
-        serialize { jacksonObjectMapper().writeValueAsBytes(it) }
-        deserialize { bytes, type -> jacksonObjectMapper().readValue(bytes, type.javaObjectType) }
-
-        //example initialization logic (create queues etc.)
-        initialize { // RabbitMQ Channel.() block ->
-            exchangeDeclare(
-                /* exchange = */ Config.rabbitExchange,
-                /* type = */ "direct",
-                /* durable = */ true
-            )
-            queueDeclare(
-                /* queue = */ Config.rabbitQueue,
-                /* durable = */true,
-                /* exclusive = */false,
-                /* autoDelete = */false,
-                /* arguments = */emptyMap()
-            )
-        }
+        rabbitMQInstance = myRabbitMQInstance
     }
 
     install(Koin) {
@@ -66,6 +75,7 @@ fun Application.module() {
         modules(
             module {
                 single { PictureRepository(database, bucketName) }
+                single { myRabbitMQInstance }
             }
         )
     }

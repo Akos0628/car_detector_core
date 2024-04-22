@@ -19,12 +19,14 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.async
 import org.koin.ktor.ext.inject
+import pl.jutupe.ktor_rabbitmq.RabbitMQInstance
 import pl.jutupe.ktor_rabbitmq.publish
 import java.lang.Math.random
 import java.time.Instant
 
 fun Application.configureRouting() {
     val repository by inject<PictureRepository>()
+    val rabbitMQInstance by inject<RabbitMQInstance>()
 
     install(ContentNegotiation) {
         json()
@@ -45,11 +47,11 @@ fun Application.configureRouting() {
             )
         }
         get("manualSend") {
-            call.publish(
+            rabbitMQInstance.publish(
                 Config.rabbitExchange,
                 Config.rabbitRoutingKey,
                 null,
-                Notification("test desc", random().toInt(), Instant.now().format())
+                Notification("test desc", (random()*100).toInt(), Instant.now().format())
             )
         }
         get("download/{id}") {
@@ -96,7 +98,12 @@ fun Application.configureRouting() {
                 }
 
                 val detections = detectionResponse.body<Detections>()
-                sendNotification(description!!, detections.detections.size)
+                rabbitMQInstance.publish(
+                    Config.rabbitExchange,
+                    Config.rabbitRoutingKey,
+                    null,
+                    Notification(description!!, detections.detections.size, Instant.now().format())
+                )
 
                 drawRectanglesForDetectedObjects(bufferedImage, detections.detections)
 
@@ -106,9 +113,4 @@ fun Application.configureRouting() {
             }
         }
     }
-}
-
-fun sendNotification(description: String, numberOfCars: Int) {
-    println("Number of cars: $numberOfCars")
-    println("Description: $description")
 }
