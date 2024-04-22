@@ -80,6 +80,18 @@
             text-decoration: none;
             color: #007bff;
         }
+        .list-button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+        }
     </style>
     <script>
         function previewFile() {
@@ -100,10 +112,14 @@
             }
         }
     </script>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
 </head>
 <body>
 <div class="container">
     <h1>Car Detector</h1>
+    <a href="/list" class="list-button">Vissza</a>
     <div class="form-container">
         <form action="/detector" method="post" enctype="multipart/form-data">
             <div class="button-container">

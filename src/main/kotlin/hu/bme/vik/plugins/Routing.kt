@@ -84,7 +84,7 @@ fun Application.configureRouting() {
                 }
 
                 if (fileBytes == null || description == null) {
-                    call.respond(FreeMarkerContent("upload.ftl", model = loadTemplateData()))
+                    call.respond(FreeMarkerContent("error.ftl", model = mapOf("error" to "Missing image or description")))
                 }
 
                 val detectionRequest = async { AiClient.getDetection(fileBytes!!) }
@@ -94,7 +94,7 @@ fun Application.configureRouting() {
 
                 val detectionResponse = detectionRequest.await()
                 if (detectionResponse.status.value != 200) {
-                    call.respond(FreeMarkerContent("upload.ftl", model = loadTemplateData()))
+                    call.respond(FreeMarkerContent("error.ftl", model = mapOf("error" to detectionResponse.body<String>())))
                 }
 
                 val detections = detectionResponse.body<Detections>()
