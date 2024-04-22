@@ -7,6 +7,9 @@ import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.*
 import javax.imageio.ImageIO
 
@@ -66,3 +69,9 @@ fun loadTemplateData(detectedImage: String? = null): Map<String, String> = mapOf
     "operatorJoinUrl" to Config.operatorJoinUrl,
     "detectedImage" to if (detectedImage == null) "" else "data:image/png;base64, $detectedImage"
 )
+
+
+private const val PATTERN_FORMAT = "uuuu-MM-dd hh:mm"
+fun Instant.format(): String = DateTimeFormatter.ofPattern(PATTERN_FORMAT)
+    .withZone(ZoneId.systemDefault())
+    .format(this)

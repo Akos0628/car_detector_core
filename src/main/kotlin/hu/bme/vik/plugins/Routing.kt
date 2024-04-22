@@ -1,7 +1,9 @@
 package hu.bme.vik.plugins
 
+import hu.bme.vik.Config
 import hu.bme.vik.clients.AiClient
 import hu.bme.vik.model.Detections
+import hu.bme.vik.model.Notification
 import hu.bme.vik.repository.PictureRepository
 import hu.bme.vik.utils.*
 import io.ktor.client.call.*
@@ -17,6 +19,9 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.async
 import org.koin.ktor.ext.inject
+import pl.jutupe.ktor_rabbitmq.publish
+import java.lang.Math.random
+import java.time.Instant
 
 fun Application.configureRouting() {
     val repository by inject<PictureRepository>()
@@ -37,6 +42,14 @@ fun Application.configureRouting() {
                 FreeMarkerContent("index.ftl", model =
                     mapOf("posts" to posts)
                 )
+            )
+        }
+        get("manualSend") {
+            call.publish(
+                Config.rabbitExchange,
+                Config.rabbitRoutingKey,
+                null,
+                Notification("test desc", random().toInt(), Instant.now().format())
             )
         }
         get("download/{id}") {

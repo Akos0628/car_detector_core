@@ -1,3 +1,4 @@
+
 val ktor_version: String by project
 val kotlin_version: String by project
 val logback_version: String by project
@@ -20,6 +21,7 @@ application {
 
 repositories {
     mavenCentral()
+    maven("https://jitpack.io")
 }
 
 dependencies {
@@ -31,6 +33,12 @@ dependencies {
     // Koin for Ktor
     implementation("io.insert-koin:koin-ktor:3.5.0")
     implementation("io.insert-koin:koin-logger-slf4j:3.5.0")
+
+
+    // rabbitmq
+    implementation("com.rabbitmq:amqp-client:5.20.0")
+    implementation("com.github.JUtupe:ktor-rabbitmq:0.4.0")
+
 
     // Mongodb
     implementation("org.litote.kmongo:kmongo-coroutine:4.11.0")
