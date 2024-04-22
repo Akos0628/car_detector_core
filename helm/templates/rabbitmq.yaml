@@ -46,9 +46,11 @@ spec:
   type: LoadBalancer
   ports:
     - port: 5672
+      name: primary
       protocol: TCP
       targetPort: 5672
     - port: 15672
+      name: secondary
       protocol: TCP
       targetPort: 15672
   selector:
